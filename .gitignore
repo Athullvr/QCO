@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.pgdata/
+data/raw/
+data/text/
+data/anakin_cache/
+data/reports/
+data/drop/*
+!data/drop/.gitkeep
+data/gold/*
+!data/gold/.gitkeep
+*.egg-info/

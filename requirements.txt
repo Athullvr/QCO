@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+alembic
+psycopg[binary]
+pgvector
+pydantic-settings
+requests
+beautifulsoup4
+lxml
+pymupdf
+pytesseract
+playwright
