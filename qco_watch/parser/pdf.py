@@ -9,7 +9,7 @@ import re
 import shutil
 from dataclasses import asdict, dataclass, field
 
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF
 
 MIN_CHARS_PER_PAGE = 40
 DEVANAGARI = re.compile(r"[\u0900-\u097F]")

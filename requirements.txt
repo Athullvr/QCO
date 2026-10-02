@@ -11,3 +11,4 @@ lxml
 pymupdf
 pytesseract
 playwright
+pillow

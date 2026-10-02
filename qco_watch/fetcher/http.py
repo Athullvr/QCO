@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import time
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -51,9 +52,14 @@ class HttpFetcher(Fetcher):
         r = FetchResult(url=url, content=body, sha256=sha256_bytes(body), fetcher=self.name, content_type=ctype, http_status=status)
         return self.store.put(r, {"etag": resp_hdr.get("ETag"), "last_modified": resp_hdr.get("Last-Modified")})
 
-    def _get(self, url, hdr):
-        r = self.s.get(url, headers=hdr, timeout=self.timeout, allow_redirects=True)
-        return r.content, r.status_code, r.headers.get("content-type"), r.headers
+    def _get(self, url, hdr, attempts: int = 3):
+        for i in range(attempts):
+            try:
+                r = self.s.get(url, headers=hdr, timeout=self.timeout, allow_redirects=True)
+                return r.content, r.status_code, r.headers.get("content-type"), r.headers
+            except (requests.ConnectionError, requests.Timeout):
+                if i == attempts - 1: raise
+                time.sleep(2 * (i + 1)); self.polite.wait(url)
 
     def _render(self, url):
         from playwright.sync_api import sync_playwright
