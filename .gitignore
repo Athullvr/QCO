@@ -13,3 +13,4 @@ data/drop/*
 data/gold/*
 !data/gold/.gitkeep
 *.egg-info/
+data/anakin_ledger.jsonl
