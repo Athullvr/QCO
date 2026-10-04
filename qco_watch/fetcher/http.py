@@ -16,7 +16,7 @@ BLOCK_STATUS = {401, 403, 406, 429, 451, 503}
 def looks_blocked_or_js_shell(body: bytes, expect: str | None) -> str | None:
     t = body.decode("utf-8", "ignore")
     if expect and not re.search(expect, t): return f"expected pattern {expect!r} absent (JS shell / block page?)"
-    if re.search(r"(?i)captcha|access denied|request rejected|are you a robot", t[:20000]): return "captcha/block page"
+    if (not expect or len(body) < 30000) and re.search(r"(?i)captcha|access denied|request rejected|are you a robot", t[:20000]): return "captcha/block page"
     return None
 
 

@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     llm_provider: str = ""
     llm_api_key: SecretStr = SecretStr("")
     llm_model: str = ""
+    llm_base_url: str = ""
+    embed_provider: str = ""  # "" = local lexical baseline | openai
+    embed_model: str = ""
 
     smtp_host: str = ""
     smtp_port: int = 587

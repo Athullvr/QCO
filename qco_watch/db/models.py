@@ -1,3 +1,4 @@
+
 """Schema. Every extracted fact (product, HS code, event) carries provenance:
 document_id + source_page + source_quote."""
 from datetime import date, datetime

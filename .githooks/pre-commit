@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Blocks committing secrets/environments: .env (any variant except *.example), .venv/venv directories.
+# Install: scripts/install_hooks.sh  (copies into .git/hooks; does not touch git config)
+bad=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(^|/)(\.env([^/]*)?|\.?venv)(/|$)' | grep -vE '(^|/)\.env[^/]*\.(example|sample|template)$')
+if [ -n "$bad" ]; then
+  echo "pre-commit: BLOCKED - these paths must never be committed:" >&2
+  echo "$bad" | head -20 | sed 's/^/  /' >&2
+  echo "Unstage with: git rm --cached -r <path>   (and make sure it is in .gitignore)" >&2
+  exit 1
+fi
+exit 0
