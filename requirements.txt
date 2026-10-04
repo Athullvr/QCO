@@ -12,3 +12,6 @@ pymupdf
 pytesseract
 playwright
 pillow
+numpy
+fastembed
+rapidocr-onnxruntime

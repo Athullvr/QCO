@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     llm_api_key: SecretStr = SecretStr("")
     llm_model: str = ""
     llm_base_url: str = ""
-    embed_provider: str = ""  # "" = local lexical baseline | openai
+    embed_provider: str = ""  # "" = local fastembed (no key) | openai
     embed_model: str = ""
 
     smtp_host: str = ""

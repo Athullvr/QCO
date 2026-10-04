@@ -19,3 +19,4 @@ data/anakin_ledger.jsonl
 .venv*/
 venv/
 data/llm_cache/
+data/hs/

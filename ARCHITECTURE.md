@@ -28,7 +28,9 @@ sources ─► fetcher chain ─► raw store ─► change_detector ─► pars
 | `sources/bis.py` | P1 | Discovery via BIS WordPress media API. |
 | `pipeline.py` | P1 | fetch → detect → parse → write text; unparseable docs go to `review_queue`. |
 | `db/models.py`, `alembic/` | P1 | Full schema incl. `qco, qco_event, qco_product, qco_hs_map, users, watch_codes, alerts, review_queue`, plus `documents, document_versions, fetch_log, anakin_ledger, hs_master, text_chunks (vector), llm_cache`. |
-| extractor / validator / eval | P2 | LLM only extracts; strict JSON schema; **needs a stronger model**. |
+| `extract/` (english, schema, extractor, llm) | P2a | English-only (Devanagari lines dropped); every field needs page+verbatim quote, verified in code; dates must match quote; HS codes kept only if literally printed. |
+| `hsmap/` (source, index, mapper) | P2b spike | HS2022 list (UN Comtrade copy of WCO) -> dense vectors (fastembed) -> LLM rerank, top-5, always `needs_review`. |
+| eval | P2 | LLM only extracts; strict JSON schema; **needs a stronger model**. |
 | matcher / alerts / api | P3 | Matching is plain code: watch `8541` matches QCO code `854140` (either direction of the hierarchy). |
 | qa (RAG) | P4 | pgvector retrieval; answer must cite chunk. |
 
