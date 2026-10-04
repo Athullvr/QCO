@@ -6,7 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-ChangeType = Literal["new", "amended", "extended", "relaxed", "withdrawn"]
+CHANGE_TYPES = ("new", "amendment", "extension", "relaxation", "withdrawal", "unclear")  # single source of truth (gold labels use the same)
+ChangeType = Literal["new", "amendment", "extension", "relaxation", "withdrawal", "unclear"]
 
 
 class Cited(BaseModel):
@@ -36,13 +37,14 @@ class Extraction(BaseModel):
     model_config = ConfigDict(extra="forbid")
     is_qco: bool | None = Field(description="true if the document is a Quality Control Order or an amendment/rescission/extension of one")
     is_qco_quote: Cited | None = None
+    qco_number: TextFact | None = Field(default=None, description="identifier of the Order exactly as printed (e.g. the gazette order number such as 'S.O. 3038(E)'); null if absent")
     order_title: TextFact | None = Field(default=None, description="title of the Order as printed, e.g. '... (Quality Control) Order, 2025'")
     ministry: TextFact | None = Field(default=None, description="issuing ministry/department; 'quote' must contain its name")
     change_type: ChangeType | None = None
     change_type_quote: Cited | None = None
     notification_date: DateFact | None = None
     effective_date: DateFact | None = Field(default=None, description="date the Order comes into force; null if not stated")
-    compliance_deadline: DateFact | None = Field(default=None, description="date by which products must comply (incl. extended/relaxed deadlines)")
+    compliance_deadline: DateFact | None = Field(default=None, description="date by which products must comply (including postponed or eased deadlines)")
     products: list[Product] = Field(default_factory=list)
     hs_codes: list[HsCode] = Field(default_factory=list, description="EMPTY unless an HS/ITC code is printed in the text")
     notes: str | None = Field(default=None, description="uncertainty or things a reviewer should check")

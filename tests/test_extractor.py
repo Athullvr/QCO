@@ -20,7 +20,7 @@ def pages(): return [(2, TXT)]
 def good():
     return {"is_qco": True, "is_qco_quote": {"page": 2, "quote": "makes the following Order"},
             "ministry": {"page": 2, "quote": "MINISTRY OF COMMERCE AND INDUSTRY", "value": "Ministry of Commerce and Industry"},
-            "change_type": "extended", "change_type_quote": {"page": 2, "quote": 'the figures "31st July, 2027" shall be substituted'},
+            "change_type": "extension", "change_type_quote": {"page": 2, "quote": 'the figures "31st July, 2027" shall be substituted'},
             "notification_date": {"page": 2, "quote": "New Delhi, the 12th June, 2026", "value": "2026-06-12"},
             "compliance_deadline": {"page": 2, "quote": 'the figures "31st July, 2027"', "value": "2027-07-31"},
             "products": [{"page": 2, "quote": "Footwear: IS 15844 : 2010", "name": "Footwear", "is_standards": ["IS 15844 : 2010"]}],
@@ -58,6 +58,14 @@ def test_hs_code_must_be_printed_in_document():
     r = validate(g, pages())
     assert [h["code"] for h in r.extraction["hs_codes"]] == ["640399"]
     assert any(i["field"] == "hs_codes" for i in r.issues)
+
+
+def test_old_change_type_vocabulary_rejected():
+    for old in ("amended", "extended", "relaxed", "withdrawn"):
+        g = good(); g["change_type"] = old
+        assert validate(g, pages()).extraction is None
+    g = good(); g["change_type"] = "unclear"
+    assert validate(g, pages()).extraction["change_type"] == "unclear"
 
 
 def test_unknown_field_rejected():

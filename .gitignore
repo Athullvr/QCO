@@ -12,6 +12,8 @@ data/drop/*
 !data/drop/.gitkeep
 data/gold/*
 !data/gold/.gitkeep
+!data/gold/*.csv
+!data/gold/*.jsonl
 *.egg-info/
 data/anakin_ledger.jsonl
 .env*
@@ -20,3 +22,4 @@ data/anakin_ledger.jsonl
 venv/
 data/llm_cache/
 data/hs/
+data/extractions/

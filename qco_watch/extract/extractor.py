@@ -10,7 +10,7 @@ from datetime import date
 from .english import norm
 from .schema import Extraction
 
-PROMPT_VERSION = "p2a-v1"
+PROMPT_VERSION = "p2a-v2"
 MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
 
 SYSTEM = """You extract structured facts from Indian Government of India Gazette notifications (English text only) about
@@ -18,8 +18,9 @@ Quality Control Orders (QCOs) issued under the Bureau of Indian Standards Act, 2
 Rules:
 - Use ONLY the supplied text. Never use outside knowledge. If a value is not stated, return null (or an empty list).
 - Every value needs `page` (from the ===== PAGE n ===== marker) and `quote`: a VERBATIM excerpt (max 300 chars) copied from that page.
-- change_type: new = a new QCO; amended = other amendment of an existing QCO; extended = a compliance/commencement date is postponed;
-  relaxed = exemptions/relaxations added or conditions eased; withdrawn = rescinded/revoked/omitted. If several apply choose the dominant one and explain in notes.
+- change_type: new = a new QCO; amendment = any other amendment of an existing QCO; extension = a compliance/commencement date is postponed;
+  relaxation = exemptions/relaxations added or conditions eased; withdrawal = rescinded/revoked/omitted; unclear = none of these can be determined
+  from the text. If several apply choose the dominant one and explain in notes.
 - notification_date = date printed under 'New Delhi, the ...' (date of the Order). effective_date = when it comes into force (a 'date of publication in the Official Gazette'
   commencement means effective_date = notification_date, quote that sentence). compliance_deadline = the date by which goods must conform; for an extension use the NEW date.
 - products: goods the Order covers, with the IS standard(s) printed for each (verbatim IS numbers). For an amendment that only changes dates, list the products of the principal order if named in the text.
@@ -63,18 +64,18 @@ def validate(raw: dict, pages: list[tuple[int, str]]) -> Result:
     try:
         ex = Extraction.model_validate(raw)
     except Exception as e:  # noqa: BLE001
-        return Result(None, [{"field": "_schema", "problem": str(e)[:500]}], True)
+        return Result(None, [{"field": "_schema", "code": "schema_invalid", "problem": str(e)[:500]}], True)
     d = ex.model_dump(mode="json")
 
     def check(field_name: str, fact: dict | None, *, is_date: bool = False) -> dict | None:
         if fact is None: return None
         if not _quote_ok(fact["quote"], fact["page"], pm):
-            issues.append({"field": field_name, "problem": "quote not found on cited page", "quote": fact["quote"][:120], "page": fact["page"]}); return None
+            issues.append({"field": field_name, "code": "quote_not_found", "problem": "quote not found on cited page", "quote": fact["quote"][:120], "page": fact["page"]}); return None
         if is_date and not _date_matches(date.fromisoformat(fact["value"]), fact["quote"]):
-            issues.append({"field": field_name, "problem": "date not supported by its quote", "value": fact["value"], "quote": fact["quote"][:120]}); return None
+            issues.append({"field": field_name, "code": "date_unsupported", "problem": "date not supported by its quote", "value": fact["value"], "quote": fact["quote"][:120]}); return None
         return fact
 
-    for f in ("order_title", "ministry", "is_qco_quote", "change_type_quote"): d[f] = check(f, d[f])
+    for f in ("qco_number", "order_title", "ministry", "is_qco_quote", "change_type_quote"): d[f] = check(f, d[f])
     for f in ("notification_date", "effective_date", "compliance_deadline"): d[f] = check(f, d[f], is_date=True)
     if d["change_type"] and not d["change_type_quote"]:
         issues.append({"field": "change_type", "problem": "no verified supporting quote; keeping value but flagged", "value": d["change_type"]})
@@ -84,11 +85,11 @@ def validate(raw: dict, pages: list[tuple[int, str]]) -> Result:
     prods = []
     for p in d["products"]:
         if not _quote_ok(p["quote"], p["page"], pm):
-            issues.append({"field": "products", "problem": "quote not found on cited page", "name": p["name"], "page": p["page"]}); continue
+            issues.append({"field": "products", "code": "quote_not_found", "problem": "quote not found on cited page", "name": p["name"], "page": p["page"]}); continue
         std_ok = []
         for s in p["is_standards"]:
             if norm(s) in pm[p["page"]] or norm(s) in " ".join(pm.values()): std_ok.append(s)
-            else: issues.append({"field": "is_standards", "problem": "IS standard string not found in document", "value": s})
+            else: issues.append({"field": "is_standards", "code": "standard_not_found", "problem": "IS standard string not found in document", "value": s})
         p["is_standards"] = std_ok
         prods.append(p)
     d["products"] = prods
@@ -97,7 +98,7 @@ def validate(raw: dict, pages: list[tuple[int, str]]) -> Result:
     for h in d["hs_codes"]:
         digits = _norm_code(h["code"])
         if len(digits) not in (2, 4, 6, 8) or not _quote_ok(h["quote"], h["page"], pm) or digits not in full_digits.get(h["page"], ""):
-            issues.append({"field": "hs_codes", "problem": "code not literally printed on cited page; dropped", "value": h["code"]}); continue
+            issues.append({"field": "hs_codes", "code": "hs_not_printed", "problem": "code not literally printed on cited page; dropped", "value": h["code"]}); continue
         hs.append({**h, "code": digits})
     d["hs_codes"] = hs
 

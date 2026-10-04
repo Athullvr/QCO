@@ -95,7 +95,7 @@ class QcoEvent(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     qco_id: Mapped[int | None] = mapped_column(ForeignKey("qco.id", ondelete="CASCADE"), index=True)
     document_id: Mapped[int] = mapped_column(ForeignKey("documents.id"), index=True)
-    change_type: Mapped[str | None] = mapped_column(String(20))  # new|amended|extended|relaxed|withdrawn
+    change_type: Mapped[str | None] = mapped_column(String(20))  # new|amendment|extension|relaxation|withdrawal|unclear
     notification_date: Mapped[date | None] = mapped_column(Date)
     effective_date: Mapped[date | None] = mapped_column(Date)
     compliance_deadline: Mapped[date | None] = mapped_column(Date)

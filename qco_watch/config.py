@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     llm_api_key: SecretStr = SecretStr("")
     llm_model: str = ""
     llm_base_url: str = ""
+    llm_json_mode: str = "json_schema"  # or json_object
     embed_provider: str = ""  # "" = local fastembed (no key) | openai
     embed_model: str = ""
 

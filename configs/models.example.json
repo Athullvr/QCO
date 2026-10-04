@@ -1,0 +1,11 @@
+{
+  "_comment": "Copy to configs/models.json. No secrets here: api_key_env names an environment variable. Prices are USD per 1M tokens - fill in from your provider's price list (null = cost shown as n/a). Model ids are placeholders on purpose.",
+  "models": [
+    {"name": "gemini-strong", "provider": "openai", "model": "REPLACE_WITH_MODEL_ID",
+     "base_url": "https://generativelanguage.googleapis.com/v1beta/openai", "api_key_env": "GEMINI_API_KEY",
+     "json_mode": "json_schema", "price_in_per_mtok": null, "price_out_per_mtok": null},
+    {"name": "gemini-fast", "provider": "openai", "model": "REPLACE_WITH_MODEL_ID",
+     "base_url": "https://generativelanguage.googleapis.com/v1beta/openai", "api_key_env": "GEMINI_API_KEY",
+     "json_mode": "json_object", "price_in_per_mtok": null, "price_out_per_mtok": null}
+  ]
+}
